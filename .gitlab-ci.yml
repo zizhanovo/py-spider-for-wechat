@@ -1,0 +1,42 @@
+# GitLab CI/CD 配置文件
+# 用于自动构建微信爬虫工具的Linux版本
+
+stages:
+  - build
+
+variables:
+  # 定义pip缓存目录，加速后续构建
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  # 缓存pip下载的包
+  paths:
+    - .cache/pip
+
+# Linux构建作业
+build_linux:
+  stage: build
+  # 使用官方的Python 3.11 Docker镜像
+  image: python:3.11
+  
+  before_script:
+    - echo "正在为PyQt5安装系统依赖..."
+    - apt-get update -q -y
+    - apt-get install -q -y libgl1-mesa-glx libegl1-mesa libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+    - echo "正在安装Python依赖包..."
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pyinstaller pillow
+
+  script:
+    - echo "开始使用build_exe.spec文件为Linux构建应用..."
+    # 使用现有的spec文件进行打包，保持一致性
+    - pyinstaller build_exe.spec
+
+  artifacts:
+    name: "Linux-Build-$CI_COMMIT_SHORT_SHA"
+    # 将整个dist目录作为构建产物上传
+    paths:
+      - dist/
+    # 构建产物保留一周
+    expire_in: 1 week 
