@@ -1,0 +1,163 @@
+name: 构建多平台可执行文件
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送版本标签时触发
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            ext: .exe
+          - os: macos-latest
+            platform: macos
+            ext: .app
+          - os: ubuntu-latest
+            platform: linux
+            ext: ''
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: 安装依赖
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller pillow
+
+    - name: 创建图标 (Windows/Linux)
+      if: matrix.platform != 'macos'
+      run: python -c "
+from PIL import Image, ImageDraw
+import os
+os.makedirs('img', exist_ok=True)
+size = 512
+img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+draw = ImageDraw.Draw(img)
+wechat_green = (7, 193, 96)
+white = (255, 255, 255)
+margin = 20
+circle_size = size - 2 * margin
+draw.ellipse([margin, margin, margin + circle_size, margin + circle_size], fill=wechat_green, outline=(6, 176, 87), width=4)
+center_x, center_y = size // 2, size // 2
+grid_size = 120
+grid_start_x = center_x - grid_size // 2
+grid_start_y = center_y - grid_size // 2
+for i in range(5):
+    x = grid_start_x + i * 30
+    draw.line([(x, grid_start_y), (x, grid_start_y + grid_size)], fill=white, width=3)
+    y = grid_start_y + i * 30
+    draw.line([(grid_start_x, y), (grid_start_x + grid_size, y)], fill=white, width=3)
+img.save('img/icon.png', 'PNG')
+sizes = [(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)]
+ico_imgs = [img.resize(s, Image.Resampling.LANCZOS) for s in sizes]
+ico_imgs[0].save('img/icon.ico', format='ICO', sizes=sizes)
+"
+
+    - name: 创建图标 (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        python -c "
+from PIL import Image, ImageDraw
+import os, subprocess, sys
+os.makedirs('img', exist_ok=True)
+size = 512
+img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+draw = ImageDraw.Draw(img)
+wechat_green = (7, 193, 96)
+white = (255, 255, 255)
+margin = 20
+circle_size = size - 2 * margin
+draw.ellipse([margin, margin, margin + circle_size, margin + circle_size], fill=wechat_green, outline=(6, 176, 87), width=4)
+center_x, center_y = size // 2, size // 2
+grid_size = 120
+grid_start_x = center_x - grid_size // 2
+grid_start_y = center_y - grid_size // 2
+for i in range(5):
+    x = grid_start_x + i * 30
+    draw.line([(x, grid_start_y), (x, grid_start_y + grid_size)], fill=white, width=3)
+    y = grid_start_y + i * 30
+    draw.line([(grid_start_x, y), (grid_start_x + grid_size, y)], fill=white, width=3)
+img.save('img/icon.png', 'PNG')
+sizes = [(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)]
+ico_imgs = [img.resize(s, Image.Resampling.LANCZOS) for s in sizes]
+ico_imgs[0].save('img/icon.ico', format='ICO', sizes=sizes)
+# Create icns for macOS
+iconset_dir = 'img/icon.iconset'
+os.makedirs(iconset_dir, exist_ok=True)
+icns_mapping = {16: 'icon_16x16.png', 32: ['icon_16x16@2x.png', 'icon_32x32.png'], 64: ['icon_32x32@2x.png', 'icon_64x64.png'], 128: ['icon_64x64@2x.png', 'icon_128x128.png'], 256: ['icon_128x128@2x.png', 'icon_256x256.png'], 512: ['icon_256x256@2x.png', 'icon_512x512.png']}
+for size_key, file_names in icns_mapping.items():
+    temp_img = img.resize((size_key, size_key), Image.Resampling.LANCZOS)
+    if isinstance(file_names, list):
+        for file_name in file_names:
+            temp_img.save(f'{iconset_dir}/{file_name}', 'PNG')
+    else:
+        temp_img.save(f'{iconset_dir}/{file_names}', 'PNG')
+subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', 'img/icon.icns'], check=True)
+"
+
+    - name: 构建应用 (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        pyinstaller --onefile --windowed --name="微信爬虫工具" --icon="img/icon.ico" --add-data="img;img" --add-data="note;note" --add-data="utils;utils" --add-data="requirements.txt;." --add-data="readme.md;." main.py
+
+    - name: 构建应用 (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        pyinstaller --onefile --windowed --name="微信爬虫工具" --icon="img/icon.icns" --add-data="img:img" --add-data="note:note" --add-data="utils:utils" --add-data="requirements.txt:." --add-data="readme.md:." main.py
+
+    - name: 构建应用 (Linux)
+      if: matrix.platform == 'linux'
+      run: |
+        pyinstaller --onefile --windowed --name="微信爬虫工具" --icon="img/icon.ico" --add-data="img:img" --add-data="note:note" --add-data="utils:utils" --add-data="requirements.txt:." --add-data="readme.md:." main.py
+
+    - name: 创建发布包
+      run: |
+        mkdir release
+        if [ "${{ matrix.platform }}" = "windows" ]; then
+          cp dist/微信爬虫工具.exe release/
+          cp exe使用说明.md release/
+        elif [ "${{ matrix.platform }}" = "macos" ]; then
+          cp -r dist/微信爬虫工具.app release/ 2>/dev/null || cp dist/微信爬虫工具 release/
+          cp exe使用说明.md release/
+        else
+          cp dist/微信爬虫工具 release/
+          cp exe使用说明.md release/
+        fi
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: 微信爬虫工具-${{ matrix.platform }}
+        path: release/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: 下载所有构建产物
+      uses: actions/download-artifact@v3
+    
+    - name: 创建发布
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          微信爬虫工具-windows/*
+          微信爬虫工具-macos/*
+          微信爬虫工具-linux/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
