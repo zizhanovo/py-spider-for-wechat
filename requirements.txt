@@ -1,4 +1,29 @@
-requests~=2.28.1
-tqdm~=4.64.0
-bs4~=0.0.1
-beautifulsoup4~=4.11.1
+# 微信公众号爬虫项目依赖包配置文件
+# =====================================
+#
+# 此文件定义了项目运行所需的Python第三方库及其版本要求。
+# 使用 pip install -r requirements.txt 命令安装所有依赖。
+#
+# 依赖包说明:
+# -----------
+# requests: HTTP请求库，用于发送网络请求获取数据
+# tqdm: 进度条显示库，用于显示爬取进度
+# bs4: BeautifulSoup4的别名，HTML/XML解析库  
+# beautifulsoup4: 强大的HTML/XML解析库，用于提取文章内容
+# selenium: 浏览器自动化框架，用于自动登录功能
+# PyQt5: GUI框架，用于图形用户界面
+#
+# 安装命令:
+# pip install -r requirements.txt
+#
+# 版本说明:
+# - 使用 ~= 操作符指定兼容版本范围
+# - 确保功能稳定性和安全性
+# - 定期更新版本以获得最新功能和安全修复
+
+requests~=2.28.1        # HTTP请求库 - 网络通信核心组件
+tqdm~=4.64.0            # 进度条显示库 - 用户体验优化
+bs4~=0.0.1              # BeautifulSoup4别名 - HTML解析支持
+beautifulsoup4~=4.11.1  # HTML/XML解析库 - 内容提取核心
+selenium~=4.15.0        # 浏览器自动化框架 - 自动登录功能
+PyQt5~=5.15.7           # GUI框架 - 图形用户界面

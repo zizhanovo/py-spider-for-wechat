@@ -1,4 +1,71 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+微信公众号爬虫GUI界面设计文件（自动生成）
+======================================
+
+文件说明:
+    此文件由PyQt5 UI设计工具(Qt Designer)自动生成，包含了爬虫程序的
+    图形用户界面布局和控件定义。请勿手动修改此文件，所有界面修改
+    应通过Qt Designer完成后重新生成。
+
+界面组件:
+    1. 用户信息区域(user_info):
+       - token输入框: 微信公众平台访问令牌
+       - cookie输入框: 身份验证Cookie信息
+       - 清空按钮: 清除输入内容
+    
+    2. 公众号选择区域(wechat_pub_select):
+       - 公众号名称输入框: 搜索关键词
+       - 查询按钮: 执行公众号搜索
+       - 选择下拉框: 显示搜索结果供用户选择
+    
+    3. 爬取设置区域(crab_settings):
+       - 起始页码: 爬取的起始页面
+       - 爬取页数: 总共爬取的页面数量
+       - 保存文件名: 结果文件名称
+       - 保存位置: 文件保存目录路径
+       - 开始爬取按钮: 启动爬虫任务
+    
+    4. 爬取进度区域(crab_progress):
+       - 进度条: 显示爬取进度百分比
+       - 日志信息: 显示实时状态和错误信息
+
+布局特点:
+    - 采用绝对位置布局(setGeometry)
+    - 支持中文界面显示
+    - 响应式字体大小设置
+    - 统一的视觉风格和间距
+
+控件配置:
+    - 字体: 根据功能重要性设置不同字号
+    - 尺寸: 合理的控件大小和间距
+    - 分组: 使用QGroupBox进行功能分区
+    - 编码: 支持UTF-8中文显示
+
+生成信息:
+    - 生成工具: PyQt5 UI code generator 5.15.7
+    - 源文件: pyspider_gui.ui (Qt Designer设计文件)
+    - 目标类: Ui_MainWindow
+
+使用方法:
+    1. 在Qt Designer中修改pyspider_gui.ui文件
+    2. 使用pyuic5工具重新生成此Python文件:
+       pyuic5 -o pyspider_gui.py pyspider_gui.ui
+    3. 在主程序中导入并使用Ui_MainWindow类
+
+注意事项:
+    - 此文件为自动生成，请勿手动编辑
+    - 界面逻辑和事件处理在main.py中实现
+    - 修改界面请使用Qt Designer工具
+    - 重新生成时会覆盖所有手动修改
+
+版本信息:
+    - PyQt5版本: 5.15.7
+    - 生成时间: 自动生成
+    - 状态: 自动维护
+"""
 
 # Form implementation generated from reading ui file 'pyspider_gui.ui'
 #
