@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         
@@ -39,20 +39,30 @@ jobs:
         echo '    draw.line([i, 50, i, size-50], fill=grid_color, width=2)' >> create_icon.py
         echo '    draw.line([50, i, size-50, i], fill=grid_color, width=2)' >> create_icon.py
         echo 'img.save("icon.png")' >> create_icon.py
-        echo 'print("图标创建完成")' >> create_icon.py
+        echo 'print("Icon created successfully")' >> create_icon.py
         
     - name: Create icon
       run: python create_icon.py
         
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed --icon=icon.png --name="微信爬虫工具" --add-data="utils;utils" main.py
+        pyinstaller --onefile --windowed --icon=icon.png --name="WeChatSpider" --add-data="utils;utils" main.py
+        
+    - name: Check build result
+      run: |
+        if (Test-Path "dist/WeChatSpider.exe") {
+          Write-Host "Build successful! File size: $((Get-Item 'dist/WeChatSpider.exe').Length / 1MB) MB"
+        } else {
+          Write-Host "Build failed: exe file not found"
+          exit 1
+        }
         
     - name: Upload Windows executable
       uses: actions/upload-artifact@v4
       with:
         name: windows-executable
-        path: dist/微信爬虫工具.exe
+        path: dist/WeChatSpider.exe
+        retention-days: 30
         
     - name: Create Release (if tagged)
       if: startsWith(github.ref, 'refs/tags/')
