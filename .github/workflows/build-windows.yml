@@ -49,7 +49,7 @@ jobs:
         pyinstaller --onefile --windowed --icon=icon.png --name="微信爬虫工具" --add-data="utils;utils" main.py
         
     - name: Upload Windows executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-executable
         path: dist/微信爬虫工具.exe
