@@ -5,7 +5,7 @@ on:
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'  # 使用稳定版本
+        python-version: '3.11'
         
     - name: Install dependencies
       run: |
@@ -26,31 +26,23 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller pillow
         
-    - name: Create icon
+    - name: Create icon script
       run: |
-        python -c "
-from PIL import Image, ImageDraw
-import os
-
-# 创建图标
-size = 256
-img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-draw = ImageDraw.Draw(img)
-
-# 微信绿色背景
-bg_color = (19, 185, 68, 255)
-draw.ellipse([10, 10, size-10, size-10], fill=bg_color)
-
-# 绘制爬虫网格
-grid_color = (255, 255, 255, 180)
-for i in range(50, size-50, 30):
-    draw.line([i, 50, i, size-50], fill=grid_color, width=2)
-    draw.line([50, i, size-50, i], fill=grid_color, width=2)
-
-# 保存图标
-img.save('icon.png')
-print('图标创建完成')
-"
+        echo 'from PIL import Image, ImageDraw' > create_icon.py
+        echo 'size = 256' >> create_icon.py
+        echo 'img = Image.new("RGBA", (size, size), (0, 0, 0, 0))' >> create_icon.py
+        echo 'draw = ImageDraw.Draw(img)' >> create_icon.py
+        echo 'bg_color = (19, 185, 68, 255)' >> create_icon.py
+        echo 'draw.ellipse([10, 10, size-10, size-10], fill=bg_color)' >> create_icon.py
+        echo 'grid_color = (255, 255, 255, 180)' >> create_icon.py
+        echo 'for i in range(50, size-50, 30):' >> create_icon.py
+        echo '    draw.line([i, 50, i, size-50], fill=grid_color, width=2)' >> create_icon.py
+        echo '    draw.line([50, i, size-50, i], fill=grid_color, width=2)' >> create_icon.py
+        echo 'img.save("icon.png")' >> create_icon.py
+        echo 'print("图标创建完成")' >> create_icon.py
+        
+    - name: Create icon
+      run: python create_icon.py
         
     - name: Build executable
       run: |
